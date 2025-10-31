@@ -17,7 +17,9 @@ for i in range(20):
   enemies.add(enemy)
 player = Entity.Player((screen.get_width()/2,screen.get_height()/2),(25,25), "white")
 aura = Weapons.Aura(player, 60, (0, 0, 255, 100))
+bullets = Weapons.bulletCross(player,1000,(0, 0, 255, 200), 10, 4, 4)
 player.weapons.append(aura)
+player.weapons.append(bullets)
 projectiles = pygame.sprite.Group()
 while running:
     keys = pygame.key.get_pressed()

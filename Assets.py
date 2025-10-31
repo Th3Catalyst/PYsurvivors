@@ -3,6 +3,8 @@ from typing import Tuple
 import pygame
 import math
 
+Number = int|float
+
 @dataclass
 class Resources:
     class HealthBar(pygame.sprite.Sprite):
@@ -28,7 +30,7 @@ class Resources:
             self.healthbarvis_rect.x = self.rect.x + 3
             self.healthbarvis_rect.y = self.rect.y + 3
         
-        def update_health(self, damage: float|int):
+        def update_health(self, damage: Number):
             self.current_health -= damage
             health_ratio = (self.current_health / self.max_health) if self.current_health > 0 else 0
             self.healthbarvis = pygame.Surface((int(46 * health_ratio), 4))
@@ -44,20 +46,22 @@ class Resources:
                 self.healthbarbg_rect.y = self.healthbarvis_rect.y = self.rect.y + 3
     
     class Projectile(pygame.sprite.Sprite):
-        def __init__(self, pos: Tuple, direction: float|int, damage: float|int, speed: float|int, color):
+        def __init__(self, pos: Tuple, direction: Number, damage: Number, speed: Number, color, enemies: pygame.sprite.Group):
             super().__init__()
             self.pos = list(pos)
             self.direction = direction
             self.damage = damage
             self.speed = speed
+            self.enemies = enemies
             self.image = pygame.Surface((50,10), pygame.SRCALPHA)
             self.image = pygame.transform.rotate(self.image, direction * (180/math.pi))
             self.rect = self.image.get_rect()
             self.rect.center = pos
             self.image.fill(color)
 
+
         
-        def move(self, speed: float|int | None = None, direction: Tuple | None = None):
+        def move(self, speed: Number | None = None, direction: Tuple | None = None):
             if speed is None:
                 speed = self.speed
             if direction is None:
@@ -68,6 +72,10 @@ class Resources:
             self.pos[0] += math.cos(direction)*speed
             self.pos[1] -= math.sin(direction)*speed
             self.rect.centerx, self.rect.centery = self.pos
+            for e in self.enemies:
+                if e.rect.colliderect(self.rect):
+                    e.health_bar.update_health(self.damage)
+                    self.kill()
             
 
 
@@ -104,8 +112,9 @@ class Entity:
 
 @dataclass            
 class Weapons:
-    class Aura:
+    class Aura(pygame.sprite.Sprite):
         def __init__(self, owner: Entity.Player, radius: int, color):
+            super().__init__()
             self.owner = owner
             self.radius = radius
             self.color = color
@@ -117,18 +126,42 @@ class Weapons:
             self.rect.center = self.owner.rect.center
             surface.blit(self.image, self.rect)
 
-        def Attack(self, enemies: pygame.sprite.Group, player: Entity.Player):
+        def Attack(self, enemies: pygame.sprite.Group, player: Entity.Player = None):
             for enemy in enemies:
                 if enemy.rect.colliderect(self.rect):
                     enemy.health_bar.update_health(1)
                     enemy.advance(player.rect.center, speed=-2)
                 if enemy.health_bar.current_health <= 0:
                     enemy.kill()
-
-
-
-
-
+    class bulletCross(pygame.sprite.Sprite):
+        def __init__(self,owner: Entity.Player,cooldown: Number, color, speed: Number, damage:Number, projCount: int):
+            super().__init__()
+            self.owner = owner
+            self.cooldown = cooldown
+            self.color = color
+            self.speed = speed
+            self.damage = damage
+            self.projCount = projCount
+            self.bullets = pygame.sprite.Group()
+        
+        def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, speed: Number|None = None, pos: Tuple|None = None, color = None, projCount: int | None = None):
+            if not (pygame.time.get_ticks % self.cooldown == 0): return
+            if damage == None:
+                damage = self.damage
+            if speed == None:
+                speed = self.speed
+            if pos == None:
+                pos = self.pos
+            if color == None:
+                color = self.color
+            if projCount == None:
+                projCount = self.projCount
+            for i in range(projCount):
+                b = Resources.Projectile(self.owner.rect.center,2*math.pi*i/projCount,damage,speed,color, enemies)
+                self.bullets.append(b)
+        def draw(self, surface):
+            for b in self.bullets:
+                b.draw(surface)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
 
 
 if __name__ == "__main__":

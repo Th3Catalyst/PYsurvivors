@@ -13,14 +13,15 @@ running = True
 
 enemies = pygame.sprite.Group()
 for i in range(20):
-  enemy = Entity.Enemy((100,100+i*40),(25,25),"red")
+  enemy = Entity.Enemy((screen.get_height()*math.cos(i*math.pi/10)+screen.get_width()/2,screen.get_height()*math.sin(i*math.pi/10) + screen.get_height()/2),(25,25),"red", 3)
   enemies.add(enemy)
 player = Entity.Player((screen.get_width()/2,screen.get_height()/2),(25,25), "white")
 aura = Weapons.Aura(player, 60, (0, 0, 255, 100))
-bullets = Weapons.bulletCross(player,1000,(0, 0, 255, 200), 10, 4, 4)
 player.weapons.append(aura)
+bullets = Weapons.bulletCross(player,1000,(0, 0, 255, 200), 10, 90, 4)
 player.weapons.append(bullets)
-projectiles = pygame.sprite.Group()
+lightning = Weapons.Lightning(player,1000, (100, 200, 255, 200),40, 3)
+player.weapons.append(lightning)
 while running:
     keys = pygame.key.get_pressed()
     for event in pygame.event.get():
@@ -36,11 +37,9 @@ while running:
               player.rect.centery -= 20
             if keys[pygame.K_s]:
               player.rect.centery += 20
-          if event.key == pygame.K_h:
-            player.health_bar.update_health(10)
-          if event.key ==  pygame.K_q:
-            test = Resources.Projectile((player.rect.centerx,player.rect.centery),math.pi/2, 10, 4, (0, 0, 255, 200))
-            projectiles.add(test)
+          if event.key == pygame.K_q:
+             bullets.projCount *= 2
+            
              
     
     if keys[pygame.K_d]:
@@ -58,29 +57,27 @@ while running:
     
     
     for enemy in enemies:
-      enemy.advance(player.rect.center,speed=random.randrange(2,5))
+      enemy.advance(player.rect.center)
       if enemy.rect.colliderect(player.rect):
-          player.health_bar.update_health(0.5)
+          player.health_bar.Damage(0.5)
       if player.health_bar.current_health <= 0:
           print("Player Defeated!")
           running = False
     
-    for p in projectiles:
-       p.move()
-
-    aura.Attack(enemies, player)  
+    
+ 
 
     screen.fill("black")
 
     
     for weapon in player.weapons:
+      weapon.Attack(enemies)
       weapon.draw(screen)
     player.draw(screen)
 
     for enemy in enemies:
       enemy.draw(screen)
     
-    projectiles.draw(screen)
 
     pygame.display.flip()
 

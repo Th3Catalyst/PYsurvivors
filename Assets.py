@@ -264,7 +264,7 @@ class Weapons:
                 for i in range(projCount):
                     
                     try:
-                        bullet = Resources.Projectile(self.owner.rect.center, math.atan((enemiesNew[i].rect.centery-self.owner.rect.centery)/(enemiesNew[i].rect.centerx-self.owner.rect.centerx)), damage, speed, color, enemies):
+                        bullet = Resources.Projectile(self.owner.rect.center, math.atan((enemiesNew[i].rect.centery-self.owner.rect.centery)/(enemiesNew[i].rect.centerx-self.owner.rect.centerx)), damage, speed, color, enemies)
                         self.projectiles.add(bullet)
                     except pygame.error:
                         pass

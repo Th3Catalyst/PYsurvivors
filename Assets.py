@@ -219,7 +219,6 @@ class Weapons:
             try:
                 enemiesNew = sorted(enemies, key=lambda e:math.sqrt(math.pow(e.rect.centerx-self.owner.rect.centerx,2)+math.pow(e.rect.centery-self.owner.rect.centery,2)))
                 for i in range(projCount):
-                    print(i)
                     enemiesNew[i].health_bar.Damage(damage)
                     
                     try:
@@ -233,30 +232,46 @@ class Weapons:
         def draw(self, surface):
             for p in self.projectiles:
                 p.draw(surface)
+                
+    class Revolver:
+        
+        def __init__(self, owner: Entity.Player,cooldown: Number, color, damage:Number, speed: Number, projCount: int):
+            self.owner = owner
+            self.cooldown = cooldown
+            self.damage = damage
+            self.color = color
+            self.projCount = projCount
+            self.projectiles = pygame.sprite.Group()
+            self.speed = speed
+            self.oldMod = 0
+        
+        def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, color = None, speed: Number  | None = None, projCount: int | None = None):
+            if not (pygame.time.get_ticks() % self.cooldown < self.oldMod): 
+                self.oldMod = pygame.time.get_ticks() % self.cooldown
+                return
+            self.oldMod = pygame.time.get_ticks() % self.cooldown
+            
+            if damage == None:
+                damage = self.damage
+            if color == None:
+                color = self.color
+            if projCount == None:
+                projCount = self.projCount
+            if projCount == None:
+                speed = self.speed
+            try:
+                enemiesNew = sorted(enemies, key=lambda e:math.sqrt(math.pow(e.rect.centerx-self.owner.rect.centerx,2)+math.pow(e.rect.centery-self.owner.rect.centery,2)))
+                for i in range(projCount):
+                    
+                    try:
+                        bullet = Resources.Projectile(self.owner.rect.center, math.atan((enemiesNew[i].rect.centery-self.owner.rect.centery)/(enemiesNew[i].rect.centerx-self.owner.rect.centerx)), damage, speed, color, enemies):
+                        self.projectiles.add(bullet)
+                    except pygame.error:
+                        pass
+            except IndexError:
+                pass
+        
+        def draw(self, surface):
+            for p in self.projectiles:
+                p.draw(surface)
 
-
-
-
-
-
-if __name__ == "__main__":
-    pygame.init()
-    screen = pygame.display.set_mode((400, 300))
-    clock = pygame.time.Clock()
-    running = True
-
-    health_bar = Resources.HealthBar(100, 75, (50, 50))
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        screen.fill("white")
-        screen.blit(health_bar.image, health_bar.rect)
-        screen.blit(health_bar.healthbarvis, health_bar.healthbarvis_rect)
-
-        pygame.display.flip()
-        clock.tick(60)
-
-    pygame.quit()

@@ -18,10 +18,8 @@ for i in range(20):
 player = Entity.Player((screen.get_width()/2,screen.get_height()/2),(25,25), "white")
 aura = Weapons.Aura(player, 60, (0, 0, 255, 100))
 player.weapons.append(aura)
-bullets = Weapons.bulletCross(player,1000,(0, 0, 255, 200), 10, 90, 4)
-player.weapons.append(bullets)
-lightning = Weapons.Lightning(player,1000, (100, 200, 255, 200),40, 3)
-player.weapons.append(lightning)
+revolver = Weapons.Revolver(player,1000, (0, 0, 255, 200), 60, 20, 7)
+player.weapons.append(revolver)
 while running:
     keys = pygame.key.get_pressed()
     for event in pygame.event.get():
@@ -38,7 +36,8 @@ while running:
             if keys[pygame.K_s]:
               player.rect.centery += 20
           if event.key == pygame.K_q:
-             bullets.projCount *= 2
+             #bullets.projCount *= 2
+             pass
             
              
     
@@ -57,7 +56,7 @@ while running:
     
     
     for enemy in enemies:
-      enemy.advance(player.rect.center)
+      enemy.advance(player.rect.center, speed=0)
       if enemy.rect.colliderect(player.rect):
           player.health_bar.Damage(0.5)
       if player.health_bar.current_health <= 0:

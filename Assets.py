@@ -257,14 +257,14 @@ class Weapons:
                 color = self.color
             if projCount == None:
                 projCount = self.projCount
-            if projCount == None:
+            if speed == None:
                 speed = self.speed
             try:
                 enemiesNew = sorted(enemies, key=lambda e:math.sqrt(math.pow(e.rect.centerx-self.owner.rect.centerx,2)+math.pow(e.rect.centery-self.owner.rect.centery,2)))
                 for i in range(projCount):
                     
                     try:
-                        bullet = Resources.Projectile(self.owner.rect.center, math.atan((enemiesNew[i].rect.centery-self.owner.rect.centery)/(enemiesNew[i].rect.centerx-self.owner.rect.centerx)), damage, speed, color, enemies)
+                        bullet = Resources.Projectile(self.owner.rect.center, (math.pi if (enemiesNew[i].rect.centerx-self.owner.rect.centerx) <= 0 else 0) - math.atan((enemiesNew[i].rect.centery-self.owner.rect.centery)/(enemiesNew[i].rect.centerx-self.owner.rect.centerx)), damage, speed, color, enemies)
                         self.projectiles.add(bullet)
                     except pygame.error:
                         pass
@@ -274,4 +274,7 @@ class Weapons:
         def draw(self, surface):
             for p in self.projectiles:
                 p.draw(surface)
+                p.move()
+        
+        
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Iterable
 import pygame
 import math
 
@@ -8,7 +8,7 @@ Number = int|float
 @dataclass
 class Resources:
     class HealthBar(pygame.sprite.Sprite):
-        def __init__(self, max_health: int, current_health: int,pos: Tuple):
+        def __init__(self, max_health: int, current_health: int,pos: Iterable):
             super().__init__()
             self.max_health = max_health
             self.current_health = current_health
@@ -30,13 +30,17 @@ class Resources:
             self.healthbarvis_rect.x = self.rect.x + 3
             self.healthbarvis_rect.y = self.rect.y + 3
         
-        def Damage(self, damage: Number):
+        def __repr__(self) -> str:
+            return f"Resources.HealthBar(max_health={self.max_health}, current_health={self.current_health}, pos={self.rect.topleft})"
+        
+        def Damage(self, damage: Number) -> None:
             self.current_health -= damage
             health_ratio = (self.current_health / self.max_health) if self.current_health > 0 else 0
             self.healthbarvis = pygame.Surface((int(46 * health_ratio), 4))
             self.healthbarvis.fill("gray")
             self.healthbarvis_rect.width = int(46 * health_ratio)
-        def draw(self, surface, pos = ""):
+
+        def draw(self, surface, pos = "") -> None:
             surface.blit(self.image, self.rect)
             surface.blit(self.healthbarvis, self.healthbarvis_rect)
             if pos:
@@ -44,9 +48,11 @@ class Resources:
                 self.rect.x -= 13
                 self.healthbarbg_rect.x = self.healthbarvis_rect.x = self.rect.x + 3
                 self.healthbarbg_rect.y = self.healthbarvis_rect.y = self.rect.y + 3
+
+
     
     class Projectile(pygame.sprite.Sprite):
-        def __init__(self, pos: Tuple, direction: Number, damage: Number, speed: Number, color, enemies: pygame.sprite.Group):
+        def __init__(self, pos: Iterable, direction: Number, damage: Number, speed: Number, color, enemies: pygame.sprite.Group):
             super().__init__()
             self.pos = list(pos)
             self.direction = direction
@@ -58,17 +64,16 @@ class Resources:
             self.image = pygame.transform.rotate(self.image, direction * (180/math.pi))
             self.rect = self.image.get_rect()
             self.rect.center = pos
+
+        def __repr__(self) -> str:
+            return f"Resources.Projectile(pos={Tuple(self.pos)},direction={self.direction}, damage={self.damage}, speed={self.speed}, color={self.image.fill}, enemies={self.enemies})"
             
-
-
         
-        def move(self, speed: Number | None = None, direction: Tuple | None = None):
+        def move(self, speed: Number | None = None, direction: Iterable | None = None) -> None:
             if speed is None:
                 speed = self.speed
             if direction is None:
                 direction = self.direction
-            
-            
 
             self.pos[0] += math.cos(direction)*speed
             self.pos[1] -= math.sin(direction)*speed
@@ -78,7 +83,7 @@ class Resources:
                     e.health_bar.Damage(self.damage)
                     self.kill()
         
-        def draw(self,surface):
+        def draw(self,surface) -> None:
             surface.blit(self.image, self.rect)
             if abs(self.rect.centerx) > 5*surface.get_width() or abs(self.rect.centery) > 5*surface.get_height():
                 self.kill()
@@ -87,11 +92,8 @@ class Resources:
 
 @dataclass
 class Entity:
-    
-    
-
     class Player(pygame.sprite.Sprite):
-        def __init__(self, pos: Tuple, dims: Tuple, color):
+        def __init__(self, pos: Iterable, dims: Iterable, color):
             super().__init__()
             self.image = pygame.Surface(dims)
             self.image.fill(color)
@@ -100,15 +102,15 @@ class Entity:
             self.health_bar = Resources.HealthBar(100, 100, (self.rect.x, self.rect.y - 20))
             self.weapons = []
 
-        def draw(self,surface):
+        def draw(self,surface) -> None:
             surface.blit(self.image, self.rect)
             self.health_bar.draw(surface, pos=(self.rect.x, self.rect.y - 20))
     
     class Enemy(Player):
-        def __init__(self, pos: Tuple, dims: Tuple, color,speed: int):
+        def __init__(self, pos: Iterable, dims: Iterable, color,speed: int):
             super().__init__(pos, dims, color)
             self.speed = speed
-        def advance(self,pos: Tuple, speed: int | None = None):
+        def advance(self,pos: Iterable, speed: int | None = None) -> None:
             if not speed: speed = self.speed
             distVector = (pos[0]-self.rect.centerx,pos[1]-self.rect.centery)
             try:
@@ -130,11 +132,11 @@ class Weapons:
             pygame.draw.circle(self.image, color, (radius, radius), radius)
             self.rect = self.image.get_rect()
         
-        def draw(self, surface):
+        def draw(self, surface) -> None:
             self.rect.center = self.owner.rect.center
             surface.blit(self.image, self.rect)
 
-        def Attack(self, enemies: pygame.sprite.Group, player: Entity.Player = None):
+        def Attack(self, enemies: pygame.sprite.Group, player: Entity.Player = None) -> None:
             if not player: player = self.owner
             for enemy in enemies:
                 if enemy.rect.colliderect(self.rect):
@@ -153,7 +155,7 @@ class Weapons:
             self.bullets = pygame.sprite.Group()
             self.oldMod = 0
         
-        def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, speed: Number|None = None, pos: Tuple|None = None, color = None, projCount: int | None = None):
+        def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, speed: Number|None = None, pos: Iterable|None = None, color = None, projCount: int | None = None) -> None:
             if not (pygame.time.get_ticks() % self.cooldown < self.oldMod): 
                 self.oldMod = pygame.time.get_ticks() % self.cooldown
                 return
@@ -172,14 +174,14 @@ class Weapons:
             for i in range(projCount):
                 b = Resources.Projectile(self.owner.rect.center,2*math.pi*i/projCount,damage,speed,color, enemies)
                 self.bullets.add(b)
-        def draw(self, surface):
+        def draw(self, surface) -> None:
             for b in self.bullets:
                 b.draw(surface)  
                 b.move()
     
     class Lightning:
         class LightningProjectile(pygame.sprite.Sprite):
-            def __init__(self,pos: Tuple, color, deathTimer: int):
+            def __init__(self,pos: Iterable, color, deathTimer: int):
                 super().__init__()
                 self.image = pygame.Surface((10,pos[1]), pygame.SRCALPHA)
                 self.image.fill(color)
@@ -187,7 +189,7 @@ class Weapons:
                 self.rect.bottomleft = (pos[0]-5,pos[1])
                 self.deathTimer = deathTimer
 
-            def draw(self, surface):
+            def draw(self, surface) -> None:
                 if self.deathTimer <=0:
                     self.kill()
                 else:
@@ -204,7 +206,7 @@ class Weapons:
             self.projectiles = pygame.sprite.Group()
             self.oldMod = 0
         
-        def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, color = None, projCount: int | None = None):
+        def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, color = None, projCount: int | None = None) -> None:
             if not (pygame.time.get_ticks() % self.cooldown < self.oldMod): 
                 self.oldMod = pygame.time.get_ticks() % self.cooldown
                 return
@@ -229,7 +231,7 @@ class Weapons:
             except IndexError:
                 pass
         
-        def draw(self, surface):
+        def draw(self, surface) -> None:
             for p in self.projectiles:
                 p.draw(surface)
                 
@@ -245,7 +247,7 @@ class Weapons:
             self.speed = speed
             self.oldMod = 0
         
-        def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, color = None, speed: Number  | None = None, projCount: int | None = None):
+        def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, color = None, speed: Number  | None = None, projCount: int | None = None) -> None:
             if not (pygame.time.get_ticks() % self.cooldown < self.oldMod): 
                 self.oldMod = pygame.time.get_ticks() % self.cooldown
                 return
@@ -271,7 +273,7 @@ class Weapons:
             except IndexError:
                 pass
         
-        def draw(self, surface):
+        def draw(self, surface) -> None:
             for p in self.projectiles:
                 p.draw(surface)
                 p.move()

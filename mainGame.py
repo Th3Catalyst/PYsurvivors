@@ -20,6 +20,7 @@ aura = Weapons.Aura(player, 60, (0, 0, 255, 100))
 player.weapons.append(aura)
 revolver = Weapons.Revolver(player,1000, (0, 0, 255, 200), 60, 20, 7)
 player.weapons.append(revolver)
+
 while running:
     keys = pygame.key.get_pressed()
     for event in pygame.event.get():

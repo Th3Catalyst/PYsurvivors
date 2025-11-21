@@ -1,0 +1,6 @@
+dist
+build
+mainGame.spec
+.vscode
+__pycache__
+.DS_Store

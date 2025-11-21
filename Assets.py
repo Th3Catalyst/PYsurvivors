@@ -111,7 +111,7 @@ class Entity:
             super().__init__(pos, dims, color)
             self.speed = speed
         def advance(self,pos: Iterable, speed: int | None = None) -> None:
-            if not speed: speed = self.speed
+            if speed == None: speed = self.speed
             distVector = (pos[0]-self.rect.centerx,pos[1]-self.rect.centery)
             try:
                 moveVector = [distVector[0]/(math.sqrt(math.pow(distVector[0],2) + math.pow(distVector[1],2))),distVector[1]/(math.sqrt(math.pow(distVector[0],2) + math.pow(distVector[1],2)))]

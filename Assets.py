@@ -7,6 +7,23 @@ Number = int|float
 
 @dataclass
 class Resources:
+    class Camera:
+      def __init__(self,width,height,*args):
+        self.screen = Rect(0,0,width,height)
+        self.sprites = [] 
+        for i in args:
+          if type(i) == pygame.sprite.Group:
+            for k in i:
+              self.sprites.push(k)
+          else:
+            self.sprites.push(i)
+      def __iadd__(self, other):
+        self.sprites.push(other)
+      def update(self,pos: Tuple):
+        self.screen.move(pos[0] - self.screen.left,pos[1] - self.screen.right)
+        
+        
+          
     class HealthBar(pygame.sprite.Sprite):
         def __init__(self, max_health: int, current_health: int,pos: Iterable):
             super().__init__()
@@ -279,4 +296,3 @@ class Weapons:
                 p.move()
         
         
-

@@ -9,21 +9,36 @@ Number = int|float
 class Resources:
     class Camera:
       def __init__(self,width,height,*args):
-        self.screen = Rect(0,0,width,height)
+        self.screen = pygame.Rect(0,0,width,height)
         self.sprites = [] 
         for i in args:
           if type(i) == pygame.sprite.Group:
             for k in i:
-              self.sprites.push(k)
+              self.sprites.append(k)
           else:
-            self.sprites.push(i)
+            self.sprites.append(i)
       def __iadd__(self, other):
-        self.sprites.push(other)
+        if type(other) == pygame.sprite.Group:
+          for k in other:
+            self.sprites.append(k)
+        else:
+          self.sprites.append(other)
+        return self
       def update(self,pos: Tuple):
-        self.screen.move(pos[0] - self.screen.left,pos[1] - self.screen.right)
+        self.screen = self.screen.move(*pos)
+        print(*pos)
         
-        
-          
+      def __str__(self):
+          return f"rect: {self.screen}, sprites: {self.sprites}"
+      def draw(self,surface):
+        for i in self.sprites:
+            if self.screen.colliderect(i.rect):
+                i.rect.x -= self.screen.x
+                i.rect.y -= self.screen.y
+                i.draw(surface)
+                i.rect.x += self.screen.x
+                i.rect.y += self.screen.y
+                
     class HealthBar(pygame.sprite.Sprite):
         def __init__(self, max_health: int, current_health: int,pos: Iterable):
             super().__init__()
@@ -120,8 +135,11 @@ class Entity:
             self.weapons = []
 
         def draw(self,surface) -> None:
+            for weapon in self.weapons:
+                weapon.draw(surface)
             surface.blit(self.image, self.rect)
             self.health_bar.draw(surface, pos=(self.rect.x, self.rect.y - 20))
+            
     
     class Enemy(Player):
         def __init__(self, pos: Iterable, dims: Iterable, color,speed: int):

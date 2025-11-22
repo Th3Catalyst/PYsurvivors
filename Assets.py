@@ -35,7 +35,7 @@ class Resources:
             if self.screen.colliderect(i.rect):
                 i.rect.x -= self.screen.x
                 i.rect.y -= self.screen.y
-                i.draw(surface)
+                i.draw(surface, self)
                 i.rect.x += self.screen.x
                 i.rect.y += self.screen.y
                 
@@ -134,9 +134,12 @@ class Entity:
             self.health_bar = Resources.HealthBar(100, 100, (self.rect.x, self.rect.y - 20))
             self.weapons = []
 
-        def draw(self,surface) -> None:
+        def draw(self,surface, camera = None) -> None:
             for weapon in self.weapons:
-                weapon.draw(surface)
+                if camera:
+                    weapon.draw(surface, camera = camera)
+                else:
+                    weapon.draw(surface)
             surface.blit(self.image, self.rect)
             self.health_bar.draw(surface, pos=(self.rect.x, self.rect.y - 20))
             
@@ -209,9 +212,15 @@ class Weapons:
             for i in range(projCount):
                 b = Resources.Projectile(self.owner.rect.center,2*math.pi*i/projCount,damage,speed,color, enemies)
                 self.bullets.add(b)
-        def draw(self, surface) -> None:
+        def draw(self, surface, camera = None) -> None:
             for b in self.bullets:
-                b.draw(surface)  
+                if camera:
+                    b.rect.x -= camera.screen.x
+                    b.rect.y -= camera.screen.y
+                b.draw(surface)
+                if camera:
+                    b.rect.x += camera.screen.x
+                    b.rect.y += camera.screen.y  
                 b.move()
     
     class Lightning:
@@ -266,9 +275,15 @@ class Weapons:
             except IndexError:
                 pass
         
-        def draw(self, surface) -> None:
+        def draw(self, surface, camera = None) -> None:
             for p in self.projectiles:
+                if camera:
+                    p.rect.x -= camera.screen.x
+                    p.rect.y -= camera.screen.y
                 p.draw(surface)
+                if camera:
+                    p.rect.x += camera.screen.x
+                    p.rect.y += camera.screen.y
                 
     class Revolver:
         
@@ -308,9 +323,15 @@ class Weapons:
             except IndexError:
                 pass
         
-        def draw(self, surface) -> None:
+        def draw(self, surface, camera = None) -> None:
             for p in self.projectiles:
+                if camera:
+                    p.rect.x -= camera.screen.x
+                    p.rect.y -= camera.screen.y
                 p.draw(surface)
+                if camera:
+                    p.rect.x += camera.screen.x
+                    p.rect.y += camera.screen.y
                 p.move()
         
         

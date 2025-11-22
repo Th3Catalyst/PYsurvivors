@@ -176,6 +176,7 @@ class Weapons:
 
         def Attack(self, enemies: pygame.sprite.Group, player: Entity.Player = None) -> None:
             if not player: player = self.owner
+            self.rect.center = player.rect.center
             for enemy in enemies:
                 if enemy.rect.colliderect(self.rect):
                     enemy.health_bar.Damage(1)

@@ -170,7 +170,7 @@ class Weapons:
             pygame.draw.circle(self.image, color, (radius, radius), radius)
             self.rect = self.image.get_rect()
         
-        def draw(self, surface) -> None:
+        def draw(self, surface, camera = None) -> None:
             self.rect.center = self.owner.rect.center
             surface.blit(self.image, self.rect)
 
@@ -180,6 +180,7 @@ class Weapons:
                 if enemy.rect.colliderect(self.rect):
                     enemy.health_bar.Damage(1)
                     enemy.advance(player.rect.center, speed=-2)
+                    print("hit")
                 if enemy.health_bar.current_health <= 0:
                     enemy.kill()
     class bulletCross:
@@ -227,7 +228,7 @@ class Weapons:
         class LightningProjectile(pygame.sprite.Sprite):
             def __init__(self,pos: Iterable, color, deathTimer: int):
                 super().__init__()
-                self.image = pygame.Surface((10,pos[1]), pygame.SRCALPHA)
+                self.image = pygame.Surface((10,700), pygame.SRCALPHA)
                 self.image.fill(color)
                 self.rect = self.image.get_rect()
                 self.rect.bottomleft = (pos[0]-5,pos[1])
@@ -320,6 +321,9 @@ class Weapons:
                         self.projectiles.add(bullet)
                     except pygame.error:
                         pass
+                    except ZeroDivisionError:
+                        bullet = Resources.Projectile(self.owner.rect.center, (math.pi if (enemiesNew[i].rect.centerx-self.owner.rect.centerx) <= 0 else 0) + ((enemiesNew[i].rect.centery-self.owner.rect.centery)/abs(enemiesNew[i].rect.centery-self.owner.rect.centery))*math.pi/2, damage, speed, color, enemies)
+                        self.projectiles.add(bullet)
             except IndexError:
                 pass
         

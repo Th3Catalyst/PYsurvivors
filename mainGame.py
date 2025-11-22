@@ -22,9 +22,9 @@ def main():
   camera += player
   aura = Weapons.Aura(player, 60, (0, 0, 255, 100))
   player.weapons.append(aura)
-  revolver = Weapons.Revolver(player,1000, (0, 0, 255, 200), 60, 20, 7)
-  #player.weapons.append(revolver)
-  lightning = Weapons.Lightning(player,1000, (200, 200, 255, 200), 0, 7)
+  revolver = Weapons.Revolver(player,1000, (0, 0, 255, 200), 0, 20, 2)
+  player.weapons.append(revolver)
+  lightning = Weapons.Lightning(player,1000, (200, 200, 255, 200), 5, 2)
   player.weapons.append(lightning)
   
   while running:

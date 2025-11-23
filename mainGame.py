@@ -22,9 +22,9 @@ def main():
   camera += player
   aura = Weapons.Aura(player, 60, (0, 0, 255, 100))
   player.weapons.append(aura)
-  revolver = Weapons.Revolver(player,1000, (0, 0, 255, 200), 0, 20, 2)
+  revolver = Weapons.Revolver(player,1000, (0, 0, 255, 200), 20, 20, 5)
   player.weapons.append(revolver)
-  lightning = Weapons.Lightning(player,1000, (200, 200, 255, 200), 5, 2)
+  lightning = Weapons.Lightning(player,1000, (200, 200, 255, 200), 25, 2)
   player.weapons.append(lightning)
   
   while running:
@@ -72,7 +72,7 @@ def main():
           camera.update((0,1))
     
     for enemy in enemies:
-      enemy.advance(player.rect.center, speed=0)
+      enemy.advance(player.rect.center, speed=1)
       if enemy.rect.colliderect(player.rect):
           player.health_bar.Damage(0.5)
       if player.health_bar.current_health <= 0:

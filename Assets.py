@@ -10,23 +10,22 @@ class Resources:
     class Camera:
       def __init__(self,width,height,*args):
         self.screen = pygame.Rect(0,0,width,height)
-        self.sprites = [] 
+        self.sprites = pygame.sprite.Group()
         for i in args:
           if type(i) == pygame.sprite.Group:
             for k in i:
-              self.sprites.append(k)
+              self.sprites.add(k)
           else:
-            self.sprites.append(i)
+            self.sprites.add(i)
       def __iadd__(self, other):
         if type(other) == pygame.sprite.Group:
           for k in other:
-            self.sprites.append(k)
+            self.sprites.add(k)
         else:
-          self.sprites.append(other)
+          self.sprites.add(other)
         return self
       def update(self,pos: Tuple):
         self.screen = self.screen.move(*pos)
-        print(*pos)
         
       def __str__(self):
           return f"rect: {self.screen}, sprites: {self.sprites}"
@@ -148,7 +147,7 @@ class Entity:
         def __init__(self, pos: Iterable, dims: Iterable, color,speed: int):
             super().__init__(pos, dims, color)
             self.speed = speed
-        def advance(self,pos: Iterable, speed: int | None = None) -> None:
+        def advance(self,pos: Iterable, speed: Number | None = None) -> None:
             if speed == None: speed = self.speed
             distVector = (pos[0]-self.rect.centerx,pos[1]-self.rect.centery)
             try:
@@ -157,6 +156,10 @@ class Entity:
                 self.rect.centery += moveVector[1] *speed
             except ZeroDivisionError:
                 pass
+        def draw(self,surface,camera = None) -> None:
+          super().draw(surface, camera = camera)
+          if self.health_bar.current_health <= 0:
+                    self.kill()
 
 @dataclass            
 class Weapons:
@@ -181,7 +184,6 @@ class Weapons:
                 if enemy.rect.colliderect(self.rect):
                     enemy.health_bar.Damage(1)
                     enemy.advance(player.rect.center, speed=-2)
-                    print("hit")
                 if enemy.health_bar.current_health <= 0:
                     enemy.kill()
     class bulletCross:

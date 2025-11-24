@@ -34,7 +34,10 @@ class Resources:
             if self.screen.colliderect(i.rect):
                 i.rect.x -= self.screen.x
                 i.rect.y -= self.screen.y
-                i.draw(surface, self)
+                try:
+                  i.draw(surface, self)
+                except TypeError:
+                  i.draw(surface)
                 i.rect.x += self.screen.x
                 i.rect.y += self.screen.y
                 
@@ -183,7 +186,8 @@ class Weapons:
             for enemy in enemies:
                 if enemy.rect.colliderect(self.rect):
                     enemy.health_bar.Damage(1)
-                    enemy.advance(player.rect.center, speed=-2)
+                    if pygame.time.get_ticks()%5 == 0:
+                      enemy.advance(player.rect.center, speed=-3)
                 if enemy.health_bar.current_health <= 0:
                     enemy.kill()
     class bulletCross:
@@ -325,8 +329,11 @@ class Weapons:
                     except pygame.error:
                         pass
                     except ZeroDivisionError:
+                      try:
                         bullet = Resources.Projectile(self.owner.rect.center, (math.pi if (enemiesNew[i].rect.centerx-self.owner.rect.centerx) <= 0 else 0) + ((enemiesNew[i].rect.centery-self.owner.rect.centery)/abs(enemiesNew[i].rect.centery-self.owner.rect.centery))*math.pi/2, damage, speed, color, enemies)
                         self.projectiles.add(bullet)
+                      except ZeroDivisionError:
+                        pass
             except IndexError:
                 pass
         

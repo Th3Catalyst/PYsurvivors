@@ -4,6 +4,7 @@ import math
 from Assets import Resources, Entity, Weapons
 import time
 import random
+import pygameGUI
 
 def main():
   # pygame setup
@@ -14,7 +15,11 @@ def main():
   
   camera = Resources.Camera(screen.get_width(),screen.get_height())
   enemies = pygame.sprite.Group()
-  for i in range(20):
+  
+  points = 0
+  pointsL = pygameGUI.Text(f"Points: {points}",pygame.font.SysFont("arial", 20, bold=True), "yellow", (10,10))
+  
+  for i in range(10):
     enemy = Entity.Enemy((screen.get_height()*math.cos(i*math.pi/10)+screen.get_width()/3,screen.get_height()*math.sin(i*math.pi/10) + screen.get_height()/3),(25,25),"red", 3)
     enemies.add(enemy)
   camera += enemies
@@ -22,7 +27,7 @@ def main():
   camera += player
   aura = Weapons.Aura(player, 60, (0, 0, 255, 100))
   player.weapons.append(aura)
-  revolver = Weapons.Revolver(player,1000, (0, 0, 255, 200), 20, 20, 5)
+  revolver = Weapons.Revolver(player,1000, (0, 0, 255, 200), 20, 10, 5)
   player.weapons.append(revolver)
   lightning = Weapons.Lightning(player,1000, (200, 200, 255, 200), 25, 2)
   player.weapons.append(lightning)
@@ -80,7 +85,15 @@ def main():
           running = False
     
     
-  
+    if pygame.time.get_ticks()%1000 == 0 and len(enemies) < 200:
+      for i in range(25):
+        enemy = Entity.Enemy((player.rect.centerx + random.randint(-1000,1000),player.rect.centery + random.randint(-1000,1000)),(25,25),"red", 3)
+        enemies.add(enemy)        
+        camera += enemy
+    elif pygame.time.get_ticks()%1000 == 0:
+      for i in enemies:
+        if not camera.screen.colliderect(i.rect):
+          i.kill()
 
     screen.fill("black")
 
@@ -89,7 +102,8 @@ def main():
       weapon.Attack(enemies)
       
 
-    
+    pointsL.draw(screen)
+    print(pointsL.font)
     
 
     pygame.display.flip()

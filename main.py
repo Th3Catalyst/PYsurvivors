@@ -6,19 +6,24 @@ import time
 import random
 import pygameGUI
 
-def main():
+import sys
+import asyncio
+
+pygame.init()
+
+
+async def main():
   # pygame setup
-  pygame.init()
   screen = pygame.display.set_mode((1280, 720))
   clock = pygame.time.Clock()
-  running = True
-  
+
+
   camera = Resources.Camera(screen.get_width(),screen.get_height())
   enemies = pygame.sprite.Group()
-  
+
   points = 0
   pointsL = pygameGUI.Text(f"Points: {points}",pygame.font.SysFont("arial", 20, bold=True), "yellow", (10,10))
-  
+
   for i in range(10):
     enemy = Entity.Enemy((screen.get_height()*math.cos(i*math.pi/10)+screen.get_width()/3,screen.get_height()*math.sin(i*math.pi/10) + screen.get_height()/3),(25,25),"red", 3)
     enemies.add(enemy)
@@ -31,6 +36,8 @@ def main():
   player.weapons.append(revolver)
   lightning = Weapons.Lightning(player,1000, (200, 200, 255, 200), 25, 2)
   player.weapons.append(lightning)
+
+  running = True
   
   while running:
     keys = pygame.key.get_pressed()
@@ -109,8 +116,9 @@ def main():
     pygame.display.flip()
 
     clock.tick(60)  
+    await asyncio.sleep(0)
   
-  pygame.quit()
   
-if __name__ == "__main__":
-  main()
+
+asyncio.run(main())
+

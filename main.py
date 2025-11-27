@@ -1,10 +1,10 @@
 import pygame
 from typing import Tuple
 import math
-from Assets import Resources, Entity, Weapons
+from Assets import Entity, Resources, Weapons
 import time
 import random
-import pygameGUI
+from pygGUI import Text
 
 import sys
 import asyncio
@@ -22,7 +22,7 @@ async def main():
   enemies = pygame.sprite.Group()
 
   points = 0
-  pointsL = pygameGUI.Text(f"Points: {points}",pygame.font.SysFont("arial", 20, bold=True), "yellow", (10,10))
+  pointsL = Text(f"Points: {points}",pygame.font.SysFont("arial", 20, bold=True), "yellow", (10,10))
 
   for i in range(10):
     enemy = Entity.Enemy((screen.get_height()*math.cos(i*math.pi/10)+screen.get_width()/3,screen.get_height()*math.sin(i*math.pi/10) + screen.get_height()/3),(25,25),"red", 3)
@@ -47,7 +47,7 @@ async def main():
         if event.type == pygame.KEYDOWN:
           if event.key == pygame.K_SPACE:
 
-            print(camera)
+
             if keys[pygame.K_d]:
               player.rect.centerx += 20
               camera.update((20,0))
@@ -110,7 +110,7 @@ async def main():
       
 
     pointsL.draw(screen)
-    print(pointsL.font)
+
     
 
     pygame.display.flip()

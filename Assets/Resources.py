@@ -1,5 +1,5 @@
-from .imports import Tuple, Iterable, pygame, math, Number
-
+from .imports import Tuple, Iterable, pygame, math, globs
+Number = globs.Number
 class Camera:
     def __init__(self,width,height,*args):
         self.screen = pygame.Rect(0,0,width,height)
@@ -35,7 +35,7 @@ class Camera:
                 i.rect.y += self.screen.y
                 
 class HealthBar(pygame.sprite.Sprite):
-    def __init__(self, max_health: int, current_health: int,pos: Iterable):
+    def __init__(self, max_health: int, current_health: int,pos: Tuple[Number, Number]):
         super().__init__()
         self.max_health = max_health
         self.current_health = current_health
@@ -60,7 +60,7 @@ class HealthBar(pygame.sprite.Sprite):
     def __repr__(self) -> str:
         return f"Resources.HealthBar(max_health={self.max_health}, current_health={self.current_health}, pos={self.rect.topleft})"
     
-    def Damage(self, damage: Number) -> None:
+    def damage(self, damage: Number) -> None:
         self.current_health -= damage
         health_ratio = (self.current_health / self.max_health) if self.current_health > 0 else 0
         self.healthbarvis = pygame.Surface((int(46 * health_ratio), 4))
@@ -77,9 +77,8 @@ class HealthBar(pygame.sprite.Sprite):
             self.healthbarbg_rect.y = self.healthbarvis_rect.y = self.rect.y + 3
 
 
-
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, pos: Iterable, direction: Number, damage: Number, speed: Number, color, enemies: pygame.sprite.Group):
+    def __init__(self, pos: Tuple[int,int], direction: int|float, damage: int|float, speed: Number, color, enemies: pygame.sprite.Group):
         super().__init__()
         self.pos = list(pos)
         self.direction = direction
@@ -107,10 +106,10 @@ class Projectile(pygame.sprite.Sprite):
         self.rect.centerx, self.rect.centery = self.pos
         for e in self.enemies:
             if e.rect.colliderect(self.rect):
-                e.health_bar.Damage(self.damage)
+                e.health_bar.damage(self.damage)
                 self.kill()
     
-    def draw(self,surface) -> None:
+    def draw(self, surface) -> None:
         surface.blit(self.image, self.rect)
         if abs(self.rect.centerx) > 5*surface.get_width() or abs(self.rect.centery) > 5*surface.get_height():
             self.kill()

@@ -22,7 +22,7 @@ async def main():
   enemies = pygame.sprite.Group()
 
   points = 0
-  pointsL = Text(f"Points: {points}",pygame.font.SysFont("arial", 20, bold=True), "yellow", (10,10))
+  pointsL = Text(f"Points: {points}",pygame.font.Font("8bitFONT.ttf", 70), "yellow", (10,10))
 
   for i in range(10):
     enemy = Entity.Enemy((screen.get_height()*math.cos(i*math.pi/10)+screen.get_width()/3,screen.get_height()*math.sin(i*math.pi/10) + screen.get_height()/3),(25,25),"red", 3)
@@ -86,7 +86,7 @@ async def main():
     for enemy in enemies:
       enemy.advance(player.rect.center, speed=1)
       if enemy.rect.colliderect(player.rect):
-          player.health_bar.Damage(0.5)
+          player.health_bar.damage(0.5)
       if player.health_bar.current_health <= 0:
           print("Player Defeated!")
           running = False

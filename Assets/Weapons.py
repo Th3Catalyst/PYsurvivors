@@ -1,6 +1,8 @@
-from .imports import Tuple, Iterable, pygame, math, Number
+from .imports import Tuple, Iterable, pygame, math, globs
+from .Resources import Projectile
+Number = globs.Number
 Player = pygame.sprite.Sprite #PLACEHOLDER
-Projectile = pygame.sprite.Sprite #PLACEHOLDER
+
 
 class Aura(pygame.sprite.Sprite):
         def __init__(self, owner: Player, radius: int, color):
@@ -16,16 +18,15 @@ class Aura(pygame.sprite.Sprite):
             self.rect.center = self.owner.rect.center
             surface.blit(self.image, self.rect)
 
-        def Attack(self, enemies: pygame.sprite.Group, player: Player = None) -> None:
+        def Attack(self, enemies: pygame.sprite.Group, player: Player | None = None) -> None:
             if not player: player = self.owner
             self.rect.center = player.rect.center
             for enemy in enemies:
                 if enemy.rect.colliderect(self.rect):
-                    enemy.health_bar.Damage(1)
+                    enemy.health_bar.damage(1)
                     if pygame.time.get_ticks()%5 == 0:
                       enemy.advance(player.rect.center, speed=-3)
-                if enemy.health_bar.current_health <= 0:
-                    enemy.kill()
+
 class bulletCross:
         def __init__(self,owner: Player,cooldown: Number, color, speed: Number, damage:Number, projCount: int):
             self.owner = owner
@@ -43,9 +44,9 @@ class bulletCross:
                 return
             self.oldMod = pygame.time.get_ticks() % self.cooldown
             
-            if damage == None:
+            if damage is None:
                 damage = self.damage
-            if speed == None:
+            if speed is None:
                 speed = self.speed
             if pos == None:
                 pos = self.owner.rect.center
@@ -53,8 +54,9 @@ class bulletCross:
                 color = self.color
             if projCount == None:
                 projCount = self.projCount
+                projCount: int
             for i in range(projCount):
-                b = Projectile(self.owner.rect.center,2*math.pi*i/projCount,damage,speed,color, enemies)
+                b = Projectile(pos,2*math.pi*i/projCount,damage,speed,color, enemies)
                 self.bullets.add(b)
         def draw(self, surface, camera = None) -> None:
             for b in self.bullets:
@@ -69,7 +71,7 @@ class bulletCross:
     
 class Lightning:
         class LightningProjectile(pygame.sprite.Sprite):
-            def __init__(self,pos: Iterable, color, deathTimer: int):
+            def __init__(self,pos: Tuple, color, deathTimer: int):
                 super().__init__()
                 self.image = pygame.Surface((10,700), pygame.SRCALPHA)
                 self.image.fill(color)
@@ -109,7 +111,7 @@ class Lightning:
             try:
                 enemiesNew = sorted(enemies, key=lambda e:math.sqrt(math.pow(e.rect.centerx-self.owner.rect.centerx,2)+math.pow(e.rect.centery-self.owner.rect.centery,2)))
                 for i in range(projCount):
-                    enemiesNew[i].health_bar.Damage(damage)
+                    enemiesNew[i].health_bar.damage(damage)
                     
                     try:
                         lightning = self.LightningProjectile(enemiesNew[i].rect.center,color,20)

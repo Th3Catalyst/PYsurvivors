@@ -1,15 +1,20 @@
-from .imports import Tuple, Iterable, pygame, math, Number
-HealthBar = pygame.sprite.Sprite #PLACEHOLDER
+from .imports import Iterable, pygame, math, globs
+from .Resources import HealthBar
+Number = globs.Number
 
+
+playerObj = None
 class Player(pygame.sprite.Sprite):
         def __init__(self, pos: Iterable, dims: Iterable, color):
             super().__init__()
-            self.image = pygame.Surface(dims)
+            self.image = pygame.Surface(tuple(dims))
             self.image.fill(color)
             self.rect = self.image.get_rect()
             self.rect.x, self.rect.y = pos
             self.health_bar = HealthBar(100, 100, (self.rect.x, self.rect.y - 20))
             self.weapons = []
+            self.points = 0
+            #globs.playerObj = self
 
         def draw(self,surface, camera = None) -> None:
             for weapon in self.weapons:
@@ -37,4 +42,8 @@ class Enemy(Player):
         def draw(self,surface,camera = None) -> None:
           super().draw(surface, camera = camera)
           if self.health_bar.current_health <= 0:
-                    self.kill()
+            self.kill()
+        def kill(self) -> None:
+            super().kill()
+            if type(globs.playerObj) == Player:
+                globs.playerObj.points += 1

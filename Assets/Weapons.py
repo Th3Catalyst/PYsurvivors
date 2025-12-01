@@ -1,15 +1,15 @@
 from .imports import Tuple, Iterable, pygame, math, globs
-from .Resources import Projectile
+from .Resources import Projectile, _isWeapon
 Number = globs.Number
 Player = pygame.sprite.Sprite #PLACEHOLDER
 
 
-class Aura(pygame.sprite.Sprite):
-        def __init__(self, owner: Player, radius: int, color):
-            super().__init__()
-            self.owner = owner
+
+class Aura(pygame.sprite.Sprite, _isWeapon):
+        def __init__(self, owner: Player, radius: int, damage: Number, color, cooldown: Number = 5):
+            pygame.sprite.Sprite.__init__(self)
+            _isWeapon.__init__(self, owner, damage, color, cooldown)
             self.radius = radius
-            self.color = color
             self.image = pygame.Surface((radius*2, radius*2), pygame.SRCALPHA)
             pygame.draw.circle(self.image, color, (radius, radius), radius)
             self.rect = self.image.get_rect()
@@ -23,26 +23,20 @@ class Aura(pygame.sprite.Sprite):
             self.rect.center = player.rect.center
             for enemy in enemies:
                 if enemy.rect.colliderect(self.rect):
-                    enemy.health_bar.damage(1)
-                    if pygame.time.get_ticks()%5 == 0:
+                    enemy.health_bar.damage(self.damage)
+                    if globs.cooldownCheck(self.cooldown):
                       enemy.advance(player.rect.center, speed=-3)
 
-class bulletCross:
+class bulletCross(_isWeapon):
         def __init__(self,owner: Player,cooldown: Number, color, speed: Number, damage:Number, projCount: int):
-            self.owner = owner
-            self.cooldown = cooldown
-            self.color = color
+            super().__init__(owner,damage,color,cooldown)
             self.speed = speed
-            self.damage = damage
             self.projCount = projCount
             self.bullets = pygame.sprite.Group()
-            self.oldMod = 0
         
         def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, speed: Number|None = None, pos: Iterable|None = None, color = None, projCount: int | None = None) -> None:
-            if not (pygame.time.get_ticks() % self.cooldown < self.oldMod): 
-                self.oldMod = pygame.time.get_ticks() % self.cooldown
+            if not globs.cooldownCheck(self.cooldown):
                 return
-            self.oldMod = pygame.time.get_ticks() % self.cooldown
             
             if damage is None:
                 damage = self.damage
@@ -69,7 +63,7 @@ class bulletCross:
                     b.rect.y += camera.screen.y  
                 b.move()
     
-class Lightning:
+class Lightning(_isWeapon):
         class LightningProjectile(pygame.sprite.Sprite):
             def __init__(self,pos: Tuple, color, deathTimer: int):
                 super().__init__()
@@ -88,19 +82,14 @@ class Lightning:
 
         
         def __init__(self, owner: Player,cooldown: Number, color, damage:Number, projCount: int):
-            self.owner = owner
-            self.cooldown = cooldown
-            self.damage = damage
-            self.color = color
+            super().__init__(owner,damage,color,cooldown)
             self.projCount = projCount
             self.projectiles = pygame.sprite.Group()
             self.oldMod = 0
         
         def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, color = None, projCount: int | None = None) -> None:
-            if not (pygame.time.get_ticks() % self.cooldown < self.oldMod): 
-                self.oldMod = pygame.time.get_ticks() % self.cooldown
+            if not globs.cooldownCheck(self.cooldown):
                 return
-            self.oldMod = pygame.time.get_ticks() % self.cooldown
             
             if damage == None:
                 damage = self.damage
@@ -131,23 +120,18 @@ class Lightning:
                     p.rect.x += camera.screen.x
                     p.rect.y += camera.screen.y
                 
-class Revolver:
+class Revolver(_isWeapon):
         
         def __init__(self, owner: Player,cooldown: Number, color, damage:Number, speed: Number, projCount: int):
-            self.owner = owner
-            self.cooldown = cooldown
-            self.damage = damage
-            self.color = color
+            super().__init__(owner,damage,color,cooldown)
             self.projCount = projCount
             self.projectiles = pygame.sprite.Group()
             self.speed = speed
             self.oldMod = 0
         
         def Attack(self, enemies: pygame.sprite.Group, damage: Number|None = None, color = None, speed: Number  | None = None, projCount: int | None = None) -> None:
-            if not (pygame.time.get_ticks() % self.cooldown < self.oldMod): 
-                self.oldMod = pygame.time.get_ticks() % self.cooldown
+            if not globs.cooldownCheck(self.cooldown):
                 return
-            self.oldMod = pygame.time.get_ticks() % self.cooldown
             
             if damage == None:
                 damage = self.damage
@@ -163,6 +147,7 @@ class Revolver:
                     
                     try:
                         bullet = Projectile(self.owner.rect.center, (math.pi if (enemiesNew[i].rect.centerx-self.owner.rect.centerx) <= 0 else 0) - math.atan((enemiesNew[i].rect.centery-self.owner.rect.centery)/(enemiesNew[i].rect.centerx-self.owner.rect.centerx)), damage, speed, color, enemies)
+
                         self.projectiles.add(bullet)
                     except pygame.error:
                         pass

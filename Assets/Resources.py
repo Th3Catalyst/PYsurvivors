@@ -1,5 +1,23 @@
 from .imports import Tuple, Iterable, pygame, math, globs
 Number = globs.Number
+
+class _isWeapon(): #internal
+    _instances = []
+    def __init__(self,owner, damage: Number, color, cooldown: Number):
+        self.owner = owner
+        self.damage = damage
+        self.color = color
+        self.cooldown = cooldown
+        self.dt = 0
+        _isWeapon._instances.append(self)
+
+    @classmethod
+    def tick(cls,dt) -> Number:
+        for i in _isWeapon._instances:
+            i.dt = dt
+        return dt
+
+
 class Camera:
     def __init__(self,width,height,*args):
         self.screen = pygame.Rect(0,0,width,height)
@@ -10,14 +28,20 @@ class Camera:
                     self.sprites.add(k)
             else:
                 self.sprites.add(i)
-    def __iadd__(self, other):
+    def __iadd__(self, other: pygame.sprite.Group|pygame.sprite.Sprite):
         if type(other) == pygame.sprite.Group:
             for k in other:
                 self.sprites.add(k)
         else:
             self.sprites.add(other)
         return self
-    def update(self,pos: Tuple):
+    def add(self,other: pygame.sprite.Group|pygame.sprite.Sprite):
+        if type(other) == pygame.sprite.Group:
+            for k in other:
+                self.sprites.add(k)
+        else:
+            self.sprites.add(other)
+    def update(self,pos: Tuple[Number, Number]):
         self.screen = self.screen.move(*pos)
     
     def __str__(self):
@@ -78,7 +102,7 @@ class HealthBar(pygame.sprite.Sprite):
 
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, pos: Tuple[int,int], direction: int|float, damage: int|float, speed: Number, color, enemies: pygame.sprite.Group):
+    def __init__(self, pos: Tuple[int,int], direction: Number, damage: Number, speed: Number, color, enemies: pygame.sprite.Group):
         super().__init__()
         self.pos = list(pos)
         self.direction = direction
@@ -92,18 +116,16 @@ class Projectile(pygame.sprite.Sprite):
         self.rect.center = pos
 
     def __repr__(self) -> str:
-        return f"Resources.Projectile(pos={Tuple(self.pos)},direction={self.direction}, damage={self.damage}, speed={self.speed}, color={self.image.fill}, enemies={self.enemies})"
+        return f"Resources.Projectile(pos={tuple(self.pos)},direction={self.direction}, damage={self.damage}, speed={self.speed}, color={self.image.fill}, enemies={self.enemies})"
         
     
-    def move(self, speed: Number | None = None, direction: Iterable | None = None) -> None:
+    def move(self, speed: Number | None = None, direction: Number | None = None) -> None:
         if speed is None:
             speed = self.speed
         if direction is None:
             direction = self.direction
 
-        self.pos[0] += math.cos(direction)*speed
-        self.pos[1] -= math.sin(direction)*speed
-        self.rect.centerx, self.rect.centery = self.pos
+        globs.moveDirection(self, direction, speed)
         for e in self.enemies:
             if e.rect.colliderect(self.rect):
                 e.health_bar.damage(self.damage)

@@ -52,8 +52,8 @@ async def main() -> dict | None:
             if hasattr(weapon, 'projCount'):
                 weapon.projCount += count
 
-    damageUpgrades = {f"{percent}% Damage Increase": lambda: damageMult(percent) for percent in range(5, 15, 5)}
-    projCountUpgrades = {f"+{count} Projectiles": lambda: addProjectile(count) for count in range(1,2)}
+    damageUpgrades = {f"{percent+5}% Damage Increase": lambda: damageMult(percent+5) for percent in range(0, 15, 5)}
+    projCountUpgrades = {f"+{count+1} Projectiles": lambda: addProjectile(count+1) for count in range(2)}
     upgrades = {**damageUpgrades, **projCountUpgrades}
     upgradeButtons = []
     for i in range(3):

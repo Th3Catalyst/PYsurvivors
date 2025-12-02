@@ -36,10 +36,9 @@ async def main() -> None:
     startMenu.add(highscoreText)
     while running:
         for event in pygame.event.get():
-            outputs = startMenu.input(event)
-            if startButton in outputs:
-                output = await parseOutput(await game.main())
-                if output:
+            
+            if startButton in (outputs := startMenu.input(event)):
+                if output := await parseOutput(await game.main()):
                     match output['case']:
                         case "QUIT":
                             running = False

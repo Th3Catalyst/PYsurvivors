@@ -43,14 +43,20 @@ async def main() -> dict | None:
                        4 / 5 * screen.get_height(), "grey", pos=(screen.get_width() / 2, screen.get_height() / 2),
                        anchor="center")
 
-    def damageMult(percent):
+    def damageMult(percent: int) -> None:
         for weapon in player.weapons:
             weapon.damage = math.ceil(weapon.damage * (1 + percent / 100))
 
-    def addProjectile(count):
+    def addProjectile(count: int) -> None:
         for weapon in player.weapons:
             if hasattr(weapon, 'projCount'):
                 weapon.projCount += count
+    
+    def addWeapon(weapon: Resources._isWeapon):
+        if not weapon in player.weapons:
+            raise NotImplementedError('weapons need default cases first')
+            player.addWeapon(weapon(player))
+        
 
     damageUpgrades = {f"{percent+5}% Damage Increase": lambda: damageMult(percent+5) for percent in range(0, 15, 5)}
     projCountUpgrades = {f"+{count+1} Projectiles": lambda: addProjectile(count+1) for count in range(2)}

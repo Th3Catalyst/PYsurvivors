@@ -15,7 +15,7 @@ def drawProjectiles(group: pygame.sprite.Group, surface, camera = None) -> None:
         p.move()
 
 class Aura(pygame.sprite.Sprite, _isWeapon):
-        def __init__(self, owner: Player, radius: int, damage: Number, color, cooldown: Number = 5):
+        def __init__(self, owner: Player, radius: int = 60, damage: Number = 1, color = (0, 0, 255, 100), cooldown: Number = 5):
             pygame.sprite.Sprite.__init__(self)
             _isWeapon.__init__(self, owner, damage, color, cooldown)
             self.radius = radius

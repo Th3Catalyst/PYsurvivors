@@ -78,7 +78,7 @@ class Menu(pygame.sprite.Sprite): #base menu class
         
         #draws all the menu elements to the screen
         for s in self.sprites:
-            if not isinstance(s,Button) or (isinstance(s,Button) and not s.isdropdown): #makes sure I don't always draw the dropdown menu, as I couldn't close it otherwise
+            if not isinstance(s,Button) or (isinstance(s,Button) and not s._isdropdown): #makes sure I don't always draw the dropdown menu, as I couldn't close it otherwise
                 #checks if the element has a special draw function
                 try:
                     s.draw(screen) 
@@ -87,34 +87,36 @@ class Menu(pygame.sprite.Sprite): #base menu class
      
 
     
-    def add(self, sprite): #function to add an element to a menu
-        self.sprites.add(sprite)
-        #puts the element below the previous one in the list if it doesn't have a manual position
-        if not sprite.pos:
-            sprite.rect.x = self.rect.x + (self.width - sprite.rect.width) / 2 #puts the element in the center
-            sprite.rect.y = self.rect.y + (self.listHeight) + self.titleTRect.height +40 + sprite.padding +sprite.margin #puts it below the previous one
-            self.listHeight += sprite.rect.height + sprite.padding*2 +sprite.margin*2 #makes the offset higher
-            try: #includes the borderWidth if the sprite has it
-                self.listHeight += sprite.borderWidth*2
-            except Exception:
-                pass
-        else: #positions the element based on manual coordinates if it has it
-            sprite.rect.x = self.rect.x + sprite.pos[0] + sprite.anchor[0] + sprite.margin
-            sprite.rect.y = self.rect.y + sprite.pos[1] + sprite.anchor[1] + sprite.margin
-        sprite.pos = (sprite.rect.x, sprite.rect.y)
+    def add(self, *args): #function to add an element to a menu
+        for sprite in args:
+            self.sprites.add(sprite)
+            #puts the element below the previous one in the list if it doesn't have a manual position
+            if not sprite.pos:
+                sprite.rect.x = self.rect.x + (self.width - sprite.rect.width) / 2 #puts the element in the center
+                sprite.rect.y = self.rect.y + (self.listHeight) + self.titleTRect.height +40 + sprite.padding +sprite.margin #puts it below the previous one
+                self.listHeight += sprite.rect.height + sprite.padding*2 +sprite.margin*2 #makes the offset higher
+                try: #includes the borderWidth if the sprite has it
+                    self.listHeight += sprite.borderWidth*2
+                except Exception:
+                    pass
+                sprite.pos = (sprite.rect.x, sprite.rect.y)
+            else: #positions the element based on manual coordinates if it has it
+                sprite.rect.x = self.rect.x + sprite.pos[0] + sprite.anchor[0] + sprite.margin
+                sprite.rect.y = self.rect.y + sprite.pos[1] + sprite.anchor[1] + sprite.margin
+                sprite.pos = (self.rect.x + sprite.pos[0], self.rect.y + sprite.pos[1])
     
-    def click(self): #function that handles menu element clicks for buttons
+    def click(self) -> dict: #function that handles menu element clicks for buttons
         #mkaes a list of the sprites that were clicked
         pos = pygame.mouse.get_pos()
         clickedSprites = [s for s in self.sprites if s.rect.collidepoint(pos)]
-
+        outputs = {}
         for s in self.sprites:
             if isinstance(s,Button) and s in clickedSprites: #runs if the clicked sprite was a button
                 try:
                     #runs the buttons specified function
                     func = s.command
-                    if not s.isdropdown:
-                        func()
+                    if not s._isdropdown:
+                        outputs[s] = func()
                     else:
                         func(s.text) #the dropdown buttons need their text as a function argument, so the code must be different
                 except Exception as e:
@@ -125,6 +127,7 @@ class Menu(pygame.sprite.Sprite): #base menu class
             if isinstance(s,TextInput) and s in clickedSprites: #runs if the clicked sprite was a text input
                 self.selectedInput = s #sets the selected input to be the clicked one
                 s.selected = True #tells the text input its selected
+        return outputs
     
     async def hover(self): #hover for buttons (WIP)
         pos = pygame.mouse.get_pos()
@@ -135,13 +138,13 @@ class Menu(pygame.sprite.Sprite): #base menu class
                 s.bgcolor = s._truebgcolor
 
 
-    def input(self,event): #function that handles all inputs for the menu elements
-
+    def input(self,event) -> dict: #function that handles all inputs for the menu elements
+        outputs: dict = {}
         if event.type == pygame.MOUSEBUTTONUP: #runs when the user clicks their mouse
             if self.selectedInput: #deselects a text input if it is selected
                 self.selectedInput.selected = False
                 self.selectedInput = None
-            self.click() #runs the click input
+            outputs: dict = self.click() #runs the click input
         if event.type == pygame.KEYDOWN and self.selectedInput: #key presses for the text input
             if self.selectedInput.hasPHMD:
                 self.selectedInput.text = ""
@@ -168,6 +171,7 @@ class Menu(pygame.sprite.Sprite): #base menu class
                 except:
                     if event.key == pygame.K_CAPSLOCK: #capslock functionality
                         self.caps = not self.caps
+        return outputs
 
 class Manager(pygame.sprite.Group): #input manager class
     def __init__(self,name=None):
@@ -185,7 +189,7 @@ class Manager(pygame.sprite.Group): #input manager class
             if isinstance(s,Button) and s in clickedSprites:
                 try:
                     func = s.command
-                    if not s.isdropdown:
+                    if not s._isdropdown:
                         func()
                     else:
                         func(s.text)
@@ -234,7 +238,7 @@ class Manager(pygame.sprite.Group): #input manager class
 
 class Text(pygame.sprite.Sprite): #text object class
     def __init__(self, text, font, color=TextStyles.color.value, pos=None, anchor=TextStyles.anchor.value, margin=TextStyles.margin.value,padding=TextStyles.padding.value):
-        super().__init__() #mkaes it a sprite
+        pygame.sprite.Sprite.__init__(self) #mkaes it a sprite
         self.font = font #text font
         self.text = text #the text string
         self.color = color #text color
@@ -245,6 +249,8 @@ class Text(pygame.sprite.Sprite): #text object class
         #margin and padding WIP
         self.margin = margin
         self.padding = padding
+
+        self._anchorpoint = anchor
 
         match anchor.lower(): #determines the offset based on anchor
             case "nw":
@@ -266,7 +272,7 @@ class Text(pygame.sprite.Sprite): #text object class
             case "se":
                 self.anchor = (-self.rect.width,-self.rect.height)
         try: #positions the text object if a pos variable was given
-            self.rect.x, self.rect.y = pos[0] +self.anchor[0], pos[1]+self.anchor[1]
+            self.rect.x, self.rect.y = pos[0] + self.anchor[0], pos[1] + self.anchor[1]
         except TypeError:
             pass
         self.pos = pos
@@ -277,59 +283,46 @@ class Text(pygame.sprite.Sprite): #text object class
     def update(self) -> None:
         self.image = self.font.render(self.text, True, self.color)
         self.rect = self.image.get_rect()
+        match self._anchorpoint.lower():  # determines the offset based on anchor
+            case "nw":
+                self.anchor = (0, 0)
+            case "ne":
+                self.anchor = (-self.rect.width, 0)
+            case "n":
+                self.anchor = (-self.rect.width / 2, 0)
+            case "w":
+                self.anchor = (-self.rect.width / 2, 0)
+            case "center":
+                self.anchor = (-self.rect.width / 2, -self.rect.height / 2)
+            case "e":
+                self.anchor = (-self.rect.width, -self.rect.height / 2)
+            case "sw":
+                self.anchor = (0, -self.rect.height)
+            case "s":
+                self.anchor = (-self.rect.width / 2, -self.rect.height)
+            case "se":
+                self.anchor = (-self.rect.width, -self.rect.height)
         if self.pos:
             self.rect.x, self.rect.y = self.pos[0] + self.anchor[0], self.pos[1] + self.anchor[1]
 
-class Button(pygame.sprite.Sprite): #button object class
+class Button(Text): #button object class
     def __init__(self, text, font, color=ButtonStyles.color.value, pos=None,command=None,bordercolor=ButtonStyles.bordercolor.value,bgcolor=ButtonStyles.bgcolor.value,bgcolorHover=ButtonStyles.bgcolor.value,anchor=ButtonStyles.anchor.value, margin=ButtonStyles.margin.value,padding=ButtonStyles.padding.value, borderWidth=ButtonStyles.borderWidth.value, isdropdown=False): #isdropdown is not used by users
-        super().__init__() #makes it a sprite
-        self.font = font # text font
-        self.text = text #text string
-        self.color = color #text color
-        self.command = command #button function
-        self.isdropdown = isdropdown #if the button is a dropdown element
+        Text.__init__(self, text,font,color,pos, anchor, margin, padding) #makes it a sprite
+
+
+        self.command = command  # button function
         self.borderColor = bordercolor
         self.bgcolor = bgcolor
         self.bgcolorHover = bgcolorHover
-        #renders the button
-        self.image = self.font.render(self.text, True, self.color)
-        self.rect = self.image.get_rect()
 
         self._truebgcolor = self.bgcolor
+        self._isdropdown = isdropdown  # if the button is a dropdown element
 
-        #margin and padding WIP
-        self.margin = margin
-        self.padding = padding
+
 
         self.borderWidth = borderWidth #width of button border (will be custom later)
 
-        match anchor.lower(): #determines the offset based on anchor
-            case "nw":
-                self.anchor = (0,0)
-            case "ne":
-                self.anchor = (-self.rect.width,0)
-            case "n":
-                self.anchor = (-self.rect.width/2,0)
-            case "w":
-                self.anchor = (-self.rect.width/2,0)
-            case "center":
-                self.anchor = (-self.rect.width/2,-self.rect.height/2)
-            case "e":
-                self.anchor = (-self.rect.width,-self.rect.height/2)
-            case "sw":
-                self.anchor = (0,-self.rect.height)
-            case "s":
-                self.anchor = (-self.rect.width/2,-self.rect.height)
-            case "se":
-                self.anchor = (-self.rect.width,-self.rect.height)
-        try: #positions the button if a pos variable was given
-            self.rect.x = pos[0] + self.anchor[0]
-            self.rect.y = pos[1] + self.anchor[1]
-            
-        except Exception:
-            pass
-        #self.rect.width += 10; self.rect.height += 10
-        self.pos = pos
+
 
 
     def draw(self, surface): #draw function
@@ -342,6 +335,9 @@ class Button(pygame.sprite.Sprite): #button object class
 
         pygame.draw.rect(surface,self.bgcolor, (self.rect.x - self.padding,self.rect.y - self.padding, self.rect.width + self.padding*2,self.rect.height + self.padding*2))
         surface.blit(self.image, self.rect)
+
+
+
 
 class Dropdown(pygame.sprite.Sprite): #dropdown class
     def __init__(self, text, font, color=DropdownStyles.color.value,bgcolor=DropdownStyles.bgcolor.value, pos=None,values=[],scaleFactor=DropdownStyles.scaleFactor.value,anchor=DropdownStyles.anchor.value, margin=DropdownStyles.margin.value,padding=DropdownStyles.padding.value):

@@ -37,7 +37,7 @@ class Enemy(Player):
             super().__init__(pos, dims, color)
             self.speed = speed
         def advance(self,pos: tuple[Number, Number], speed: Number | None = None) -> None:
-            if speed == None: speed = self.speed
+            if speed is None: speed = self.speed
             globs.moveTo(self, pos, speed)
 
         def draw(self,surface,camera = None) -> None:

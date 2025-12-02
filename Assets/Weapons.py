@@ -3,7 +3,16 @@ from .Resources import Projectile, _isWeapon
 Number = globs.Number
 Player = pygame.sprite.Sprite #PLACEHOLDER
 
-
+def drawProjectiles(group: pygame.sprite.Group, surface, camera = None) -> None:
+    for p in group:
+        if camera:
+            p.rect.x -= camera.screen.x
+            p.rect.y -= camera.screen.y
+        p.draw(surface)
+        if camera:
+            p.rect.x += camera.screen.x
+            p.rect.y += camera.screen.y
+        p.move()
 
 class Aura(pygame.sprite.Sprite, _isWeapon):
         def __init__(self, owner: Player, radius: int, damage: Number, color, cooldown: Number = 5):
@@ -27,7 +36,7 @@ class Aura(pygame.sprite.Sprite, _isWeapon):
                     if globs.cooldownCheck(self.cooldown):
                       enemy.advance(player.rect.center, speed=-3)
 
-class bulletCross(_isWeapon):
+class BulletCross(_isWeapon):
         def __init__(self,owner: Player,cooldown: Number, color, speed: Number, damage:Number, projCount: int):
             super().__init__(owner,damage,color,cooldown)
             self.speed = speed
@@ -42,26 +51,18 @@ class bulletCross(_isWeapon):
                 damage = self.damage
             if speed is None:
                 speed = self.speed
-            if pos == None:
+            if pos is None:
                 pos = self.owner.rect.center
-            if color == None:
+            if color is None:
                 color = self.color
-            if projCount == None:
+            if projCount is None:
                 projCount = self.projCount
                 projCount: int
             for i in range(projCount):
                 b = Projectile(pos,2*math.pi*i/projCount,damage,speed,color, enemies)
                 self.bullets.add(b)
         def draw(self, surface, camera = None) -> None:
-            for b in self.bullets:
-                if camera:
-                    b.rect.x -= camera.screen.x
-                    b.rect.y -= camera.screen.y
-                b.draw(surface)
-                if camera:
-                    b.rect.x += camera.screen.x
-                    b.rect.y += camera.screen.y  
-                b.move()
+            drawProjectiles(self.bullets, surface, camera)
     
 class Lightning(_isWeapon):
         class LightningProjectile(pygame.sprite.Sprite):
@@ -91,11 +92,11 @@ class Lightning(_isWeapon):
             if not globs.cooldownCheck(self.cooldown):
                 return
             
-            if damage == None:
+            if damage is None:
                 damage = self.damage
-            if color == None:
+            if color is None:
                 color = self.color
-            if projCount == None:
+            if projCount is None:
                 projCount = self.projCount
             try:
                 enemiesNew = sorted(enemies, key=lambda e:math.sqrt(math.pow(e.rect.centerx-self.owner.rect.centerx,2)+math.pow(e.rect.centery-self.owner.rect.centery,2)))
@@ -133,13 +134,13 @@ class Revolver(_isWeapon):
             if not globs.cooldownCheck(self.cooldown):
                 return
             
-            if damage == None:
+            if damage is None:
                 damage = self.damage
-            if color == None:
+            if color is None:
                 color = self.color
-            if projCount == None:
+            if projCount is None:
                 projCount = self.projCount
-            if speed == None:
+            if speed is None:
                 speed = self.speed
             try:
                 enemiesNew = sorted(enemies, key=lambda e:math.sqrt(math.pow(e.rect.centerx-self.owner.rect.centerx,2)+math.pow(e.rect.centery-self.owner.rect.centery,2)))
@@ -161,14 +162,6 @@ class Revolver(_isWeapon):
                 pass
         
         def draw(self, surface, camera = None) -> None:
-            for p in self.projectiles:
-                if camera:
-                    p.rect.x -= camera.screen.x
-                    p.rect.y -= camera.screen.y
-                p.draw(surface)
-                if camera:
-                    p.rect.x += camera.screen.x
-                    p.rect.y += camera.screen.y
-                p.move()
+            drawProjectiles(self.projectiles,surface, camera)
         
         

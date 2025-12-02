@@ -1,9 +1,10 @@
 from typing import Tuple, Iterable
 import pygame
 import math
-class globs():
+class globs:
     Number = int|float
     dt = 0
+
     @classmethod
     def cooldownCheck(cls, cooldown: int) -> bool:
         return pygame.time.get_ticks() % cooldown < (pygame.time.get_ticks() - globs.dt) % cooldown
@@ -13,19 +14,20 @@ class globs():
         globs.dt = dt
 
     @staticmethod
-    def moveTo(object: pygame.sprite.Sprite, target: tuple[Number, Number], speed: Number) -> None:
+    def moveTo(sprite: pygame.sprite.Sprite, target: tuple[Number, Number], speed: Number) -> None:
+        if not hasattr(sprite, 'pos'): raise AttributeError('object must have a pos attribute')
         pos=target
-        distVector = pygame.Vector2(pos[0] - object.rect.centerx, pos[1] - object.rect.centery)
+        distVector = pygame.Vector2(pos[0] - sprite.rect.centerx, pos[1] - sprite.rect.centery)
         if distVector.length_squared() > float(0):
             direction = distVector.normalize()
-            object.pos += direction * speed
-            object.rect.centerx, object.rect.centery = object.pos[0], object.pos[1]
+            sprite.pos += direction * speed
+            sprite.rect.centerx, sprite.rect.centery = sprite.pos[0], sprite.pos[1]
 
     @staticmethod
-    def moveDirection(object: pygame.sprite.Sprite, direction: Number, speed: Number) -> None:
-        object.pos = list(object.pos)
-        object.pos[0] += math.cos(direction) * speed
-        object.pos[1] -= math.sin(direction) * speed
-        object.pos = tuple(object.pos)
-        object.rect.centerx, object.rect.centery = object.pos
+    def moveDirection(sprite: pygame.sprite.Sprite, direction: Number, speed: Number) -> None:
+        sprite.pos = list(sprite.pos)
+        sprite.pos[0] += math.cos(direction) * speed
+        sprite.pos[1] -= math.sin(direction) * speed
+        sprite.pos = tuple(sprite.pos)
+        sprite.rect.centerx, sprite.rect.centery = sprite.pos
 

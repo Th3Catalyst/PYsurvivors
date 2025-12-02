@@ -1,21 +1,13 @@
 from .imports import Tuple, Iterable, pygame, math, globs
 Number = globs.Number
 
-class _isWeapon(): #internal
-    _instances = []
+class _isWeapon: #internal
     def __init__(self,owner, damage: Number, color, cooldown: Number):
         self.owner = owner
         self.damage = damage
         self.color = color
         self.cooldown = cooldown
-        self.dt = 0
-        _isWeapon._instances.append(self)
 
-    @classmethod
-    def tick(cls,dt) -> Number:
-        for i in _isWeapon._instances:
-            i.dt = dt
-        return dt
 
 
 class Camera:
